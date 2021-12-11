@@ -1,22 +1,23 @@
 package com.example.joinup;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Objects;
 
 public class EventDetailActivity extends AppCompatActivity {
     final static String TAG = "EventDetailActivity";
     private EditText titleEditText;
-    private EditText imageLinkEditText;
+    private EditText imageDescriptionEditText;
     private EditText eventDetailsEditText;
     private Button saveButton;
 
@@ -25,10 +26,13 @@ public class EventDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
 
+        // show the up arrow, aka the "back button"
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+
         // get the Views
         titleEditText = findViewById(R.id.titleEditTextMultiLine);
         eventDetailsEditText = findViewById(R.id.detailsEditTextMultiLine);
-        imageLinkEditText = findViewById(R.id.imageLinkEditText);
+        imageDescriptionEditText = findViewById(R.id.imageDescriptionEditText);
 
         // send the Views off back to MainActivity
         // working with the save button
@@ -46,8 +50,9 @@ public class EventDetailActivity extends AppCompatActivity {
                 Intent intent = new Intent();
                 if (!titleEditText.getText().toString().equals("")) {
                     intent.putExtra("title", titleEditText.getText().toString());
-                    intent.putExtra("imageLink", imageLinkEditText.getText().toString());
+                    intent.putExtra("description", imageDescriptionEditText.getText().toString());
                     intent.putExtra("info", eventDetailsEditText.getText().toString());
+                    //intent.putExtra("category", )
                     EventDetailActivity.this.setResult(Activity.RESULT_OK, intent);
                     EventDetailActivity.this.finish();
                 }
@@ -56,5 +61,17 @@ public class EventDetailActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    // adds the menu bar
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        // returns to MainActivity without saving any information
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                this.finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

@@ -21,7 +21,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     String title;
     String info;
     int numberOfAttendees;
-    String imageUrl;
+    String imageDescription;
     List<EventDetail> eventsList;
     ActivityResultLauncher<Intent> launcher;
     CustomAdapter adapter;
@@ -63,30 +62,17 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     Intent data = result.getData();
                     title = data.getStringExtra("title");
-                    imageUrl = data.getStringExtra("imageLink");
+                    imageDescription = data.getStringExtra("description");
                     info = data.getStringExtra("info");
                     //numberOfAttendees = data.getIntExtra("number", 0);
-                    //imageID = data.getIntExtra("imageID", 0);
 
-                    // adds video to videoList and RecyclerView, if the addButton was clicked
+                    // adds event to eventsList and RecyclerView, if the addButton was clicked
                     if (addButtonClicked) {
-                        eventsList.add(new EventDetail(title, info, numberOfAttendees));
+                        eventsList.add(new EventDetail(title, info, imageDescription, numberOfAttendees));
                         adapter.notifyItemInserted(adapter.getItemCount() - 1);
                     }
 
                     // updates the video to videoList and RecyclerView, if the video view was clicked
-                    if (clickOnVideo) {
-                        /*
-                        eventsList.get(index).setEventTitle(title);
-                        eventsList.get(index).setEventInfo(info);
-                        eventsList.get(index).setNumberOfStudents(numberOfAttendees);
-                        //if (imageID == 0) {
-                        //  eventsList.get(index).setWatched(watched);
-                        //}
-                        adapter.notifyItemChanged(index);
-
-                         */
-                    }
 
                     // reset values
                     addButtonClicked = false;
@@ -139,15 +125,19 @@ public class MainActivity extends AppCompatActivity {
     class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.CustomViewHolder> {
         class CustomViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
             TextView titleTextView;
-            ImageView imageView;
+            TextView imageDescriptionTextView;
             TextView eventDetailsTextView;
+            TextView numberOfEventsTextView;
 
             public CustomViewHolder(@NonNull View itemView) {
                 super(itemView);
 
                 titleTextView = itemView.findViewById(R.id.titleTextView);
-                imageView = itemView.findViewById(R.id.imageView);
+                imageDescriptionTextView = itemView.findViewById(R.id.imageDescriptionTextView);
                 eventDetailsTextView = itemView.findViewById(R.id.eventDetailsTextView);
+
+                numberOfEventsTextView = findViewById(R.id.numberOfEventsTextView);
+                numberOfEventsTextView.setText("Number of events: " + getItemCount());
 
                 // wire 'em up
                 itemView.setOnClickListener(this);
@@ -156,17 +146,21 @@ public class MainActivity extends AppCompatActivity {
 
             public void updateView(EventDetail eventDetail) {
                 titleTextView.setText(eventDetail.getEventTitle());
-                imageView.setImageResource(R.drawable.placeholder_image);
+                imageDescriptionTextView.setText(eventDetail.getImageDescription());
                 eventDetailsTextView.setText(eventDetail.getEventInfo());
             }
 
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "onClick: ");
-                clickOnVideo = true;
-                Toast.makeText(MainActivity.this, "Decide what to do here", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(MainActivity.this, EventInfoActivity.class);
-                startActivity(intent);
+                index = getLayoutPosition();
+                clickOnVideo = true;
+                intent.putExtra("title", eventsList.get(getLayoutPosition()).getEventTitle());
+                intent.putExtra("info", eventsList.get(getLayoutPosition()).getEventInfo());
+                intent.putExtra("number", eventsList.get(getLayoutPosition()).getNumberOfStudents());
+                intent.putExtra("description", eventsList.get(getLayoutPosition()).getImageDescription());
+                launcher.launch(intent);
             }
 
             @Override
@@ -176,16 +170,25 @@ public class MainActivity extends AppCompatActivity {
                 // use an AlertDialog.Builder object and method chaining to build an alert dialog
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 builder.setTitle("Event Long Clicked")
-                        .setMessage("Do you plan on attending?")
+                        .setMessage("Do you plan on attending? If you clicked YES previously, you can click NO if you decide on not attending.")
                         .setPositiveButton("YES", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 // executes when the user presses "YES"
-                                index = getAdapterPosition();
+                                index = getLayoutPosition();
                                 eventsList.get(index).setNumberOfStudents(1);
+
                                 Toast.makeText(MainActivity.this, "WOOHOO! You have been added.", Toast.LENGTH_SHORT).show();
                            }
-                     }).setNegativeButton("NO", null);
+                     }).setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        // executes when the user presses "NO"
+                        index = getLayoutPosition();
+                        eventsList.get(index).setNumberOfStudents(-1);
+                        Toast.makeText(MainActivity.this, "You have decided not to attend :(.", Toast.LENGTH_SHORT).show();
+                    }
+                });
                 builder.show();
 
                 return true;
