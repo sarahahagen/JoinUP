@@ -7,6 +7,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.TextView;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.FirebaseAuthUIActivityResultContract;
@@ -17,6 +19,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,6 +27,10 @@ import java.util.List;
 public class GoogleSSO extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
+
+    static final String TAG = "debug_tag";
+    TextView usernameText;
+    TextView emailText;
 
     private final ActivityResultLauncher<Intent> signInLauncher = registerForActivityResult(
             new FirebaseAuthUIActivityResultContract(),
@@ -40,8 +47,14 @@ public class GoogleSSO extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_sso);
 
+
+        GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
         List<AuthUI.IdpConfig> providers = Arrays.asList(
-                new AuthUI.IdpConfig.GoogleBuilder().build());
+                new AuthUI.IdpConfig.GoogleBuilder().setSignInOptions(options).build());
 
         // Create and launch sign-in intent
         Intent signInIntent = AuthUI.getInstance()
@@ -56,14 +69,15 @@ public class GoogleSSO extends AppCompatActivity {
         if (result.getResultCode() == RESULT_OK) {
             // Successfully signed in
 
-            //TODO Launch activity for the rest of app.
-            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            // Return to calling activity
+            finish();
             // ...
         } else {
             // Sign in failed. If response is null the user canceled the
             // sign-in flow using the back button. Otherwise check
             // response.getError().getErrorCode() and handle the error.
             // ...
+            Log.d(TAG, "Auth failed");
         }
     }
 }
