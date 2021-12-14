@@ -10,6 +10,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
+
+import java.io.FileInputStream;
+
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -26,6 +35,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity {
     static final String TAG = "MainActivityTag";
@@ -44,6 +54,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        Intent intent = new Intent(this, GoogleSSO.class);
+        startActivity(intent);
+
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+
+        if (mAuth.getCurrentUser() != null) {
+            Toast.makeText(this, "Logged in as: " + mAuth.getCurrentUser().getEmail(), Toast.LENGTH_SHORT).show();
+        }
+        else {
+            startActivity(intent);
+        }
 
         launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>()  {
             /**
