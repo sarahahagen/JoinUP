@@ -106,6 +106,9 @@ public class EventDetail {
         if (month == -1) {
             return "No date/time entered";
         }
+        if (minute < 10) {
+            return month +  "/" + day + "/" + year + " at " + hour + ":" + "0" + minute;
+        }
         return month +  "/" + day + "/" + year + " at " + hour + ":" + minute;
     }
 
@@ -161,6 +164,10 @@ public class EventDetail {
             }
         }
         return str;
+    }
+
+    public ArrayList<String> attendeeList() {
+        return attendees;
     }
 
     public int getMonth() {

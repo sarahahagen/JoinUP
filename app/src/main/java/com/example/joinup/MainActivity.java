@@ -71,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, GoogleSSO.class);
         startActivity(intent);
 
-        Log.d(TAG, eventsReference.toString());
 
         mAuth = FirebaseAuth.getInstance();
         if (mAuth.getCurrentUser() != null) {
@@ -156,12 +155,15 @@ public class MainActivity extends AppCompatActivity {
 
                 int index = 0;
 
-                for (EventDetail e : eventsList) {
+
+                for (int i = 0; i < eventsList.size(); i++) {
+                    EventDetail e = eventsList.get(i);
                     if ((e.getEventTitle().equals(eventDetail.getEventTitle())) & (e.getCoordinatorEmail().equals(e.getCoordinatorEmail()))) {
                         index = eventsList.indexOf(e);
                         eventsList.set(index, eventDetail);
                     }
                 }
+
                 adapter.notifyItemChanged(index);
             }
 
@@ -172,7 +174,9 @@ public class MainActivity extends AppCompatActivity {
 
                 int index = 0;
 
-                for (EventDetail e : eventsList) {
+                for (int i = 0; i < eventsList.size(); i++) {
+                    EventDetail e = eventsList.get(i);
+
                     if ((e.getEventTitle().equals(eventDetail.getEventTitle())) & (e.getCoordinatorEmail().equals(e.getCoordinatorEmail()))) {
                         index = eventsList.indexOf(e);
                         eventsList.remove(index);
@@ -254,9 +258,13 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, EventInfoActivity.class);
                 index = getLayoutPosition();
                 clickOnVideo = true;
-                intent.putExtra("title", eventsList.get(getLayoutPosition()).getEventTitle());
-                intent.putExtra("info", eventsList.get(getLayoutPosition()).getEventInfo());
-                intent.putExtra("number", eventsList.get(getLayoutPosition()).getNumberOfStudents());
+
+                EventDetail eventDetail = eventsList.get(getLayoutPosition());
+                intent.putExtra("title", eventDetail.getEventTitle());
+                intent.putExtra("info", eventDetail.getEventInfo());
+                intent.putExtra("number", eventDetail.getNumberOfStudents());
+                intent.putExtra("coordinator", eventDetail.getCoordinatorEmail());
+                intent.putStringArrayListExtra("attendees", eventDetail.attendeeList());
                 launcher.launch(intent);
             }
 
