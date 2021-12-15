@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "648581407522",
+    "project_id": "joinup-daa56",
+    "storage_bucket": "joinup-daa56.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:648581407522:android:8bad777021f56b93907b7b",
+        "android_client_info": {
+          "package_name": "com.example.joinup"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "648581407522-j4gnutirti0vf5g80ji1amje4161sghf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDYcQeKX5bLgaoUQ3Wr0xFDQBn-yaTwwE0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "648581407522-j4gnutirti0vf5g80ji1amje4161sghf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
