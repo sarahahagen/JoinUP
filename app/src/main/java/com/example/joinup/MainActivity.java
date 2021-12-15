@@ -290,9 +290,8 @@ public class MainActivity extends AppCompatActivity {
 
                         eventsList.get(index).removeAttendee(mAuth.getCurrentUser().getEmail());
 
-                        Query eventQuery = eventsReference.equalTo(eventDetail.getCoordinatorEmail(), "coordinatorEmail").equalTo(eventDetail.getEventTitle(), "eventTitle");
+                        Query eventQuery = eventsReference.equalTo(eventDetail.getKey(), "key");
                         eventQuery.getRef().removeValue();
-
                         eventsReference.push().setValue( eventsList.get(index));
 
                         Toast.makeText(MainActivity.this, "You have decided not to attend :(.", Toast.LENGTH_SHORT).show();

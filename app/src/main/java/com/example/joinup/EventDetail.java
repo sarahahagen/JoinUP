@@ -1,5 +1,7 @@
 package com.example.joinup;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 
 public class EventDetail {
@@ -137,8 +139,16 @@ public class EventDetail {
     public void setCompressedAttendees(String attendees) {
 
         ArrayList<String> lst = new ArrayList<>();
+        Log.d("MainActivityTag", "setCompressedAttendees");
+        for (String s : this.attendees) {
+            Log.d("MainActivityTag", s);
+        }
+        Log.d("MainActivityTag", "spltting");
         for (String s : attendees.split("#")) {
-            lst.add(s);
+            if (!s.equals("")) {
+                lst.add(s);
+                Log.d("MainActivityTag", "s: " + s);
+            }
         }
         this.attendees = lst;
     }
@@ -146,7 +156,9 @@ public class EventDetail {
     public String getCompressedAttendees() {
         String str = "";
         for (String s : attendees) {
-            str += "#" + s;
+            if (!s.equals("")) {
+                str += "#" + s;
+            }
         }
         return str;
     }
