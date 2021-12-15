@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.joinup">
 
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -9,6 +12,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.JoinUP">
+        <activity
+            android:name=".CalendarActivity"
+            android:exported="true" />
         <activity
             android:name=".EventInfoActivity"
             android:exported="true" />
@@ -26,8 +32,7 @@
         </activity>
         <activity
             android:name=".GoogleSSO"
-            android:exported="false">
-        </activity>
+            android:exported="false" />
     </application>
 
 </manifest>

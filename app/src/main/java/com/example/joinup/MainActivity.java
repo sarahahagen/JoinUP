@@ -202,6 +202,10 @@ public class MainActivity extends AppCompatActivity {
                                 eventsList.get(index).setNumberOfStudents(1);
 
                                 Toast.makeText(MainActivity.this, "WOOHOO! You have been added.", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(MainActivity.this, CalendarActivity.class);
+                                intent.putExtra("title", eventsList.get(getLayoutPosition()).getEventTitle());
+                                intent.putExtra("info", eventsList.get(getLayoutPosition()).getEventInfo());
+                                launcher.launch(intent);
                            }
                      }).setNegativeButton("NO", new DialogInterface.OnClickListener() {
                     @Override

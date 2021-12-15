@@ -2,7 +2,6 @@ package com.example.joinup;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -52,7 +51,6 @@ public class EventDetailActivity extends AppCompatActivity {
                     intent.putExtra("title", titleEditText.getText().toString());
                     intent.putExtra("description", imageDescriptionEditText.getText().toString());
                     intent.putExtra("info", eventDetailsEditText.getText().toString());
-                    //intent.putExtra("category", )
                     EventDetailActivity.this.setResult(Activity.RESULT_OK, intent);
                     EventDetailActivity.this.finish();
                 }
