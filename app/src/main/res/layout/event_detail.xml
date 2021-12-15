@@ -22,14 +22,14 @@
             android:ems="10"
             android:gravity="start|top"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            card_view:layout_constraintBottom_toTopOf="@+id/imageDescriptionTextView"
+            card_view:layout_constraintBottom_toTopOf="@+id/dateTimeTextView"
             card_view:layout_constraintEnd_toEndOf="parent"
             card_view:layout_constraintHorizontal_bias="0.5"
             card_view:layout_constraintStart_toStartOf="parent"
             card_view:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/imageDescriptionTextView"
+            android:id="@+id/dateTimeTextView"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:ems="10"
@@ -51,7 +51,7 @@
             card_view:layout_constraintEnd_toEndOf="parent"
             card_view:layout_constraintHorizontal_bias="0.5"
             card_view:layout_constraintStart_toStartOf="parent"
-            card_view:layout_constraintTop_toBottomOf="@+id/imageDescriptionTextView" />
+            card_view:layout_constraintTop_toBottomOf="@+id/dateTimeTextView" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

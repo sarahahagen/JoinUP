@@ -29,8 +29,6 @@ public class GoogleSSO extends AppCompatActivity {
     private FirebaseAuth mAuth;
 
     static final String TAG = "debug_tag";
-    TextView usernameText;
-    TextView emailText;
 
     private final ActivityResultLauncher<Intent> signInLauncher = registerForActivityResult(
             new FirebaseAuthUIActivityResultContract(),

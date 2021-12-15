@@ -5,17 +5,25 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.media.metrics.Event;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 
 import java.io.FileInputStream;
 
@@ -50,6 +58,10 @@ public class MainActivity extends AppCompatActivity {
     boolean clickOnVideo = false;
     int index = 0;
 
+    FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
+    DatabaseReference eventsReference = mFirebaseDatabase.getReference().child("Event");
+    FirebaseAuth mAuth = FirebaseAuth.getInstance();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,14 +71,17 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, GoogleSSO.class);
         startActivity(intent);
 
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        Log.d(TAG, eventsReference.toString());
 
+        mAuth = FirebaseAuth.getInstance();
         if (mAuth.getCurrentUser() != null) {
             Toast.makeText(this, "Logged in as: " + mAuth.getCurrentUser().getEmail(), Toast.LENGTH_SHORT).show();
         }
         else {
             startActivity(intent);
         }
+
+
 
         launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>()  {
             /**
@@ -85,14 +100,22 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     Intent data = result.getData();
                     title = data.getStringExtra("title");
-                    imageDescription = data.getStringExtra("description");
-                    info = data.getStringExtra("info");
-                    //numberOfAttendees = data.getIntExtra("number", 0);
 
+                    int month = data.getIntExtra("month", -1);
+                    int day = data.getIntExtra("day", -1);
+                    int year = data.getIntExtra("year", -1);
+                    int hour = data.getIntExtra("hour", -1);
+                    int minute = data.getIntExtra("minute", -1);
+
+                    //numberOfAttendees = data.getIntExtra("number", 0);
+                    String info = data.getStringExtra("info");
                     // adds event to eventsList and RecyclerView, if the addButton was clicked
                     if (addButtonClicked) {
-                        eventsList.add(new EventDetail(title, info, imageDescription, numberOfAttendees));
-                        adapter.notifyItemInserted(adapter.getItemCount() - 1);
+                        EventDetail eventDetail = new EventDetail(title, info, numberOfAttendees);
+                        eventDetail.setTimeDay(month, day, year, hour, minute);
+                        eventDetail.setCoordinatorEmail(mAuth.getCurrentUser().getEmail());
+                        ///eventsReference.child(mAuth.getCurrentUser().getEmail().substring(0, mAuth.getCurrentUser().getEmail().indexOf("@"))+ "@" + title).setValue(eventDetail);
+                        eventsReference.push().setValue(eventDetail);
                     }
 
                     // updates the video to videoList and RecyclerView, if the video view was clicked
@@ -104,18 +127,70 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //eventsList.add(new EventDetail("Frasier Watch Party", "Please stop by ISE"));
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         eventsList = new ArrayList<>();
-        eventsList.add(new EventDetail());
-        eventsList.add(new EventDetail());
-        eventsList.add(new EventDetail());
+
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
         adapter = new CustomAdapter();
         recyclerView.setAdapter(adapter);
+
+        eventsReference.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+                Log.d(TAG, "onChildAdded: " + previousChildName);
+                EventDetail eventDetail =
+                        snapshot.getValue(EventDetail.class);
+                // add it to our list and notify our adapter
+                eventsList.add(eventDetail);
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                EventDetail eventDetail =
+                        snapshot.getValue(EventDetail.class);
+
+                int index = 0;
+
+                for (EventDetail e : eventsList) {
+                    if ((e.getEventTitle().equals(eventDetail.getEventTitle())) & (e.getCoordinatorEmail().equals(e.getCoordinatorEmail()))) {
+                        index = eventsList.indexOf(e);
+                        eventsList.set(index, eventDetail);
+                    }
+                }
+                adapter.notifyItemChanged(index);
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+                EventDetail eventDetail =
+                        snapshot.getValue(EventDetail.class);
+
+                int index = 0;
+
+                for (EventDetail e : eventsList) {
+                    if ((e.getEventTitle().equals(eventDetail.getEventTitle())) & (e.getCoordinatorEmail().equals(e.getCoordinatorEmail()))) {
+                        index = eventsList.indexOf(e);
+                        eventsList.remove(index);
+                    }
+                }
+                adapter.notifyItemChanged(index);
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     @Override
@@ -148,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
     class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.CustomViewHolder> {
         class CustomViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
             TextView titleTextView;
-            TextView imageDescriptionTextView;
+            TextView dateTimeTextView;
             TextView eventDetailsTextView;
             TextView numberOfEventsTextView;
 
@@ -156,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
                 super(itemView);
 
                 titleTextView = itemView.findViewById(R.id.titleTextView);
-                imageDescriptionTextView = itemView.findViewById(R.id.imageDescriptionTextView);
+                dateTimeTextView = itemView.findViewById(R.id.dateTimeTextView);
                 eventDetailsTextView = itemView.findViewById(R.id.eventDetailsTextView);
 
                 numberOfEventsTextView = findViewById(R.id.numberOfEventsTextView);
@@ -169,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
 
             public void updateView(EventDetail eventDetail) {
                 titleTextView.setText(eventDetail.getEventTitle());
-                imageDescriptionTextView.setText(eventDetail.getImageDescription());
+                dateTimeTextView.setText(eventDetail.readableDateTime());
                 eventDetailsTextView.setText(eventDetail.getEventInfo());
             }
 
@@ -182,7 +257,6 @@ public class MainActivity extends AppCompatActivity {
                 intent.putExtra("title", eventsList.get(getLayoutPosition()).getEventTitle());
                 intent.putExtra("info", eventsList.get(getLayoutPosition()).getEventInfo());
                 intent.putExtra("number", eventsList.get(getLayoutPosition()).getNumberOfStudents());
-                intent.putExtra("description", eventsList.get(getLayoutPosition()).getImageDescription());
                 launcher.launch(intent);
             }
 
@@ -199,8 +273,11 @@ public class MainActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int which) {
                                 // executes when the user presses "YES"
                                 index = getLayoutPosition();
-                                eventsList.get(index).setNumberOfStudents(1);
-
+                                EventDetail eventDetail = eventsList.get(index);
+                                eventDetail.addAttendee(mAuth.getCurrentUser().getEmail());
+                                Query eventQuery = eventsReference.equalTo(eventDetail.getKey(), "key");
+                                eventQuery.getRef().removeValue();
+                                eventsReference.push().setValue( eventsList.get(index));
                                 Toast.makeText(MainActivity.this, "WOOHOO! You have been added.", Toast.LENGTH_SHORT).show();
                            }
                      }).setNegativeButton("NO", new DialogInterface.OnClickListener() {
@@ -208,7 +285,16 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         // executes when the user presses "NO"
                         index = getLayoutPosition();
-                        eventsList.get(index).setNumberOfStudents(-1);
+
+                        EventDetail eventDetail = eventsList.get(index);
+
+                        eventsList.get(index).removeAttendee(mAuth.getCurrentUser().getEmail());
+
+                        Query eventQuery = eventsReference.equalTo(eventDetail.getCoordinatorEmail(), "coordinatorEmail").equalTo(eventDetail.getEventTitle(), "eventTitle");
+                        eventQuery.getRef().removeValue();
+
+                        eventsReference.push().setValue( eventsList.get(index));
+
                         Toast.makeText(MainActivity.this, "You have decided not to attend :(.", Toast.LENGTH_SHORT).show();
                     }
                 });
